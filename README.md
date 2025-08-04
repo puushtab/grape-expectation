@@ -8,7 +8,7 @@ A complete statistical learning pipeline to classify grape varieties from morpho
 
 **Objective:** Predict whether a grape belongs to the *Besni* or *Kecimen* variety based on 7 image-derived features (area, perimeter, convex area, etc.).
 
-We apply a **hybrid approach** combining **unsupervised learning** (PCA, clustering) and **supervised learning** (logistic regression, Lasso, SVM, LDA/QDA) to:
+We apply a **hybrid approach** combining **unsupervised learning** (PCA, clustering) and **supervised learning** (logistic regression, Lasso, SVM, LDA/QDA, XGBoost) to:
 
 * Understand structure in the data
 * Reduce dimensionality
@@ -52,13 +52,19 @@ We apply a **hybrid approach** combining **unsupervised learning** (PCA, cluster
 * Polynomial kernel underperforms compared to linear
 * Grid search used to tune hyperparameters
 
-### 3. ROC and AUC
+### 3. XGBoost
+
+* Gradient boosting classifier trained with `xgboost` on raw features
+* Tuned using cross-validation and early stopping
+* Performs competitively with linear SVM and logistic models
+
+### 4. ROC and AUC
 
 * All models evaluated with ROC curves and AUC on test set
 * Computed with `pROC` and `ROCR`
-* Best models (logit-2PC and SVM-linear) reach **AUC \~0.932**
+* Best models (logit-2PC, SVM-linear, and XGBoost) reach **AUC \~0.93**
 
-### 4. Discriminant Analysis
+### 5. Discriminant Analysis
 
 * LDA and QDA implemented both manually and using `MASS`
 * LDA directions consistent with PCA structure
@@ -71,6 +77,7 @@ We apply a **hybrid approach** combining **unsupervised learning** (PCA, cluster
 | ---------------- | ----- | ---------- |
 | Logistic (2 PCs) | 0.932 | 12.8%      |
 | SVM (Linear)     | 0.931 | 12.1%      |
+| XGBoost          | 0.930 | 12.4%      |
 | Lasso            | 0.923 | 13.2%      |
 | Stepwise AIC     | 0.925 | 12.5%      |
 | LDA              | 0.918 | 13.0%      |
@@ -83,25 +90,25 @@ We apply a **hybrid approach** combining **unsupervised learning** (PCA, cluster
 
 * PCA greatly enhances performance and interpretability
 * The **logistic regression on PC1 + PC2** achieves strong results with high transparency
-* **SVM with linear kernel** slightly outperforms in error but at higher model complexity
+* **SVM with linear kernel** and **XGBoost** offer similar or slightly lower error rates with robust performance
 * Discriminant methods (LDA, QDA) show consistent trends with the structure revealed by PCA
 
 ---
 
 ## 📁 Files
 
-| File          | Description                                                         |
-| ------------- | ------------------------------------------------------------------- |
-| `exo1.R`      | Unsupervised learning: EDA, PCA, clustering                         |
-| `exo2.R`      | Supervised learning: logistic regression, Lasso, SVM, ROC, LDA, QDA |
-| `grape.R`     | Combined script with modular functions and full visualizations      |
-| `Raisin.xlsx` | Source dataset (Cinar et al., 2020)                                 |
+| File          | Description                                                                  |
+| ------------- | ---------------------------------------------------------------------------- |
+| `exo1.R`      | Unsupervised learning: EDA, PCA, clustering                                  |
+| `exo2.R`      | Supervised learning: logistic regression, Lasso, SVM, XGBoost, ROC, LDA, QDA |
+| `grape.R`     | Combined script with modular functions and full visualizations               |
+| `Raisin.xlsx` | Source dataset (Cinar et al., 2020)                                          |
 
 ---
 
 ## ✏️ Authors
 
-* Project completed by **Gabriel Dupuis** and **Hussein Rammal** — MSc in Maths & CS at Institut Polytechnique de Paris - ENSTA Paris
+* Project completed by **Gabriel Dupuis** and **Hussein Rammal** — MSc in CS&Maths, Institut Polytechnique de Paris - ENSTA Paris
 
 ---
 
