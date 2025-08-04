@@ -1,98 +1,121 @@
-# grape-expectation
+# 🍇 Grape Expectation
 
-Partie I – Analyse non supervisée
-1. Analyses uni- et bi-variée
-Objectif : inspecter chaque variable isolément puis explorer les relations deux à deux.
+A complete statistical learning pipeline to classify grape varieties from morphometric image features — based on the Raisin dataset (Cinar et al., 2020). Developed as the final project for the **STA203 Statistical Learning course** at ENSTA Paris.
 
-Univariée :
+---
 
-Pour chaque variable quantitative, calculer moyenne, médiane, écart-type (summary(), sd()) et tracer histogrammes et boxplots (cf. TP1 §2–3 TP1-corr).
+## 🔬 Project Overview
 
-Pour la variable qualitative (variété), produire une table de comptage et un barplot.
+**Objective:** Predict whether a grape belongs to the *Besni* or *Kecimen* variety based on 7 image-derived features (area, perimeter, convex area, etc.).
 
-Bivariée :
+We apply a **hybrid approach** combining **unsupervised learning** (PCA, clustering) and **supervised learning** (logistic regression, Lasso, SVM, LDA/QDA) to:
 
-Nuages de points pour chaque paire de variables avec couleur selon la variété (pairs(), ggpairs()) et matrice de corrélation (corrplot::corrplot()), comme dans TP2 §1 TP2-corr.
+* Understand structure in the data
+* Reduce dimensionality
+* Train and compare multiple classifiers
 
-Discussion des corrélations fortes (ex. area–perimeter).
+---
 
-2. Méthodologie d’étude de l’ACP
-Objectif : suivre rigoureusement les étapes de l’ACP normée.
+## ⚖️ Unsupervised Learning
 
-Centrage et réduction (scale()) TP2-corr.
+### 1. Exploratory Analysis
 
-Calcul de la matrice de corrélation et diagonalisation (eigen()), extraction des valeurs propres et % d’inertie (TP2 §2) TP2-corr.
+* Summary stats, boxplots, and pairwise correlations
+* Highlights strong linear relationships among size-related variables (e.g., Area ≈ ConvexArea)
 
-Choix du nombre d’axes (critère du coude, % cumulé > 80 %).
+### 2. PCA (Principal Component Analysis)
 
-Calcul des composantes principales :
+* PCA performed both manually and using `FactoMineR`
+* PC1 explains \~88% of the variance and aligns with grape size
+* PC2 captures shape-related variance
+* Biplots and 2D projections show good visual separation between classes
 
-Coordonnées des individus (F = X %*% vectp) et des variables (cor(X, F)) TP2-corr.
+### 3. Clustering
 
-Critères de qualité (cos², contributions) ENSTA-tp2-ACP-suite.
+* Hierarchical clustering (Ward method) using original features and PCA scores
+* Validated with classification error, ARI (Adjusted Rand Index), and silhouette analysis
+* Clustering aligns well with known labels when using PC space
 
-3. Classification hiérarchique ascendante (CAH)
-Objectif : segmenter sans supervision, comparer avec les variétés connues.
+---
 
-Lancer CAH sur les 7 variables TP5-corr.
+## 🎓 Supervised Learning
 
-Dendrogramme (plot(hclust(dist(X)))), choix du nombre de clusters (coupure à hauteur, éboulis).
+### 1. Logistic Regression
 
-Évaluer la qualité : silhouette (silhouette()) et erreur de classification en comparant cutree() versus la variété ENSTA-tp5-clustering-su….
+* Models trained with raw variables and PCs
+* Best tradeoff found using **PC1 + PC2** as predictors
+* Stepwise AIC and Lasso (`glmnet`) further refine feature selection
 
-Tester l’influence de la normalisation (CAH sur les données centrées-réduites vs brutes).
+### 2. SVM (Support Vector Machine)
 
-4. CAH sur composantes principales
-Objectif : voir l’effet de la réduction de dimension sur la classification.
+* Trained with linear and polynomial kernels using `e1071::svm`
+* Polynomial kernel underperforms compared to linear
+* Grid search used to tune hyperparameters
 
-Pour k = 1,…,7, appliquer CAH aux k premières composantes (programmation R basique).
+### 3. ROC and AUC
 
-Calculer l’erreur de classification pour chaque k et identifier le k minimisant l’erreur.
+* All models evaluated with ROC curves and AUC on test set
+* Computed with `pROC` and `ROCR`
+* Best models (logit-2PC and SVM-linear) reach **AUC \~0.932**
 
-Discussion du biais potentiel (surapprentissage si on choisit k après avoir vu l’erreur).
+### 4. Discriminant Analysis
 
-Partie II – Choix d’un modèle supervisé
-1. Régression logistique
-Objectif : modéliser la probabilité de variété Besni vs Kecimen.
+* LDA and QDA implemented both manually and using `MASS`
+* LDA directions consistent with PCA structure
 
-Définir le modèle logit et rappeler l’impact du centrage-réduction (cf. Cours §8.2).
+---
 
-Ajuster le modèle complet sur les composantes principales extraites (ou directement sur les variables, selon choix) avec glm(..., family=binomial) TP6_cor.
+## 🏆 Performance Summary
 
-Discussion théorique/pratique sur standardisation des variables (importance pour l’interprétation et convergence).
+| Model            | AUC   | Test Error |
+| ---------------- | ----- | ---------- |
+| Logistic (2 PCs) | 0.932 | 12.8%      |
+| SVM (Linear)     | 0.931 | 12.1%      |
+| Lasso            | 0.923 | 13.2%      |
+| Stepwise AIC     | 0.925 | 12.5%      |
+| LDA              | 0.918 | 13.0%      |
+| QDA              | 0.912 | 13.7%      |
+| SVM (Poly)       | 0.911 | 15.2%      |
 
-2. Découpage apprentissage/test
-Objectif : évaluer la performance hors échantillon.
+---
 
-Créer l’échantillon d’apprentissage avec set.seed(1); train = sample(...) projetSTA203-2024-2025.
+## 📊 Key Insights
 
-Projeter les données de test sur l’ACP calculée sur l’apprentissage (méthode PCA + predict.PCA).
+* PCA greatly enhances performance and interpretability
+* The **logistic regression on PC1 + PC2** achieves strong results with high transparency
+* **SVM with linear kernel** slightly outperforms in error but at higher model complexity
+* Discriminant methods (LDA, QDA) show consistent trends with the structure revealed by PCA
 
-3. Estimation de modèles
-Objectif : comparer plusieurs approches de sélection de variables et de régularisation.
+---
 
-Modèle complet (toutes les composantes ou variables).
+## 📁 Files
 
-Modèle 2 composantes seules.
+| File          | Description                                                         |
+| ------------- | ------------------------------------------------------------------- |
+| `exo1.R`      | Unsupervised learning: EDA, PCA, clustering                         |
+| `exo2.R`      | Supervised learning: logistic regression, Lasso, SVM, ROC, LDA, QDA |
+| `grape.R`     | Combined script with modular functions and full visualizations      |
+| `Raisin.xlsx` | Source dataset (Cinar et al., 2020)                                 |
 
-Sélection pas à pas AIC (stepAIC()) TP10-Choix-C.
+---
 
-Régression Lasso (glmnet(..., alpha=1)) en sélectionnant λ par validation croisée (cv.glmnet()) ENSTA-tp11-Regul.
+## ✏️ Authors
 
-Choix des hyperparamètres (critère AIC pour stepwise, cv.glmnet pour lasso).
+* Project completed by **Romain Bonnin** and **Amine Skalli** — M1 MAPS, ENSTA Paris
 
-4. Modèles SVM
-Objectif : tester des classifieurs alternatifs.
+---
 
-SVM linéaire (svm(..., kernel="linear")) puis SVM polynomial (kernel="polynomial") avec e1071::svm.
+## 📚 Reference
 
-Validation croisée pour le coût et le degré (grid search).
+> Cinar, I., Koklu, M., & Tasdemir, S. (2020). Classification of Raisin Varieties Using Machine Learning Algorithms. *Measurement*, 168, 108419.
 
-5. Courbes ROC et AUC
-Objectif : comparer graphiquement et numériquement.
+---
 
-Sur apprentissage et test, tracer les courbes ROC (pROC::roc ou ROCR::performance) TP9.
+## 🚀 Manual vs. Library Code
 
-Superposer la règle aléatoire (ligne diagonale).
+* PCA, logistic regression, clustering, and LDA/QDA all implemented both **from scratch** and using R packages
+* Ensures transparency, reproducibility, and deeper understanding of model mechanics
 
-Calculer l’AUC pour chaque modèle, l’afficher dans la légende.
+---
+
+*Let the data ferment into insights!* 🥃
