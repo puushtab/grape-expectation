@@ -101,7 +101,7 @@ We apply a **hybrid approach** combining **unsupervised learning** (PCA, cluster
 
 ## ✏️ Authors
 
-* Project completed by **Romain Bonnin** and **Amine Skalli** — M1 MAPS, ENSTA Paris
+* Project completed by **Gabriel Dupuis** and **Hussein Rammal** — MSc in Maths & CS at Institut Polytechnique de Paris - ENSTA Paris
 
 ---
 
